@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    .full
+    {
+      position:absolute;
+      top: 0px;
+      left: 0px;
+    }
+    .center
+    {
+      position:absolute;
+      top: 243px; /* (full_height - roi_height) / 2 */
+      left: 432px; /* (full_width - roi_width) / 2 */
+      z-index: 2;
+    }
+    .top-left
+    {
+      position:absolute;
+      top: 54px; /* full_height / 2 * (100 - corner_field_percent) / 100 - roi_height / 2 */
+      left: 96px; /* full_width / 2 * (100 - corner_field_percent) / 100 - roi_width / 2 */
+      z-index: 2;
+    }
+    .top-right
+    {
+      position:absolute;
+      top: 54px; /* full_height / 2 * (100 - corner_field_percent) / 100 - roi_height / 2 */
+      left: 768px; /* full_width / 2 * (100 + corner_field_percent) / 100 - roi_width / 2 */
+      z-index: 2;
+    }
+    .bottom-left
+    {
+      position:absolute;
+      top: 432px; /* full_height / 2 * (100 + corner_field_percent) / 100 - roi_height / 2 */
+      left: 96px; /* full_width / 2 * (100 - corner_field_percent) / 100 - roi_width / 2 */
+      z-index: 2;
+    }
+    .bottom-right
+    {
+      position:absolute;
+      top: 432px; /* full_height / 2 * (100 + corner_field_percent) / 100 - roi_height / 2 */
+      left: 768px; /* full_width / 2 * (100 + corner_field_percent) / 100 - roi_width / 2 */
+      z-index: 2;
+    }
+
+    /* label */
+    .label-center
+    {
+      position:absolute;
+      top: 243px;
+      left: 530px;
+      z-index: 3;
+      background-color: #007799;
+      color: white;
+      font-weight: bold;
+    }
+    .label-top-left
+    {
+      position:absolute;
+      top: 54px;
+      left: 194px;
+      z-index: 3;
+      background-color: #007799;
+      color: white;
+      font-weight: bold;
+    }
+    .label-top-right
+    {
+      position:absolute;
+      top: 54px;
+      left: 866px;
+      z-index: 3;
+      background-color: #007799;
+      color: white;
+      font-weight: bold;
+    }
+    .label-bottom-left
+    {
+      position:absolute;
+      top: 432px;
+      left: 194px;
+      z-index: 3;
+      background-color: #007799;
+      color: white;
+      font-weight: bold;
+    }
+    .label-bottom-right
+    {
+      position:absolute;
+      top: 432px;
+      left: 866px;
+      z-index: 3;
+      background-color: #007799;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<script>
+  function refresh(node)
+  {
+     var times = 1000; // ms
+  
+     (function startRefresh()
+     {
+        var address;
+        if(node.src.indexOf('?')>-1)
+         address = node.src.split('?')[0];
+        else 
+         address = node.src;
+        node.src = address+"?time="+new Date().getTime();
+        setTimeout(startRefresh,times);
+     })();
+  
+  }
+
+  function readTextFile(file, label_ct, label_tl, label_tr, label_bl, label_br)
+  {
+      var rawFile = new XMLHttpRequest();
+      rawFile.open("GET", file, false);
+      rawFile.onreadystatechange = function ()
+      {
+          if(rawFile.readyState === 4)
+          {
+              if(rawFile.status === 200 || rawFile.status == 0)
+              {
+                  var response = rawFile.responseText;
+                  var values = response.split("\n");
+                  label_ct.innerHTML = values[0];
+                  label_tl.innerHTML = values[1];
+                  label_tr.innerHTML = values[2];
+                  label_bl.innerHTML = values[3];
+                  label_br.innerHTML = values[4];
+              }
+          }
+      }
+      rawFile.send(null);
+  }
+
+
+  function label_refresh()
+  {
+    var times = 33; // gap in Milli Seconds;
+    
+    var label_ct = document.getElementById('label_ct');
+    var label_tl = document.getElementById('label_tl');
+    var label_tr = document.getElementById('label_tr');
+    var label_bl = document.getElementById('label_bl');
+    var label_br = document.getElementById('label_br');
+
+    (function startRefresh()
+    {
+        var address = "fv.txt";
+
+        address = address+"?time="+new Date().getTime();
+        readTextFile(address, label_ct, label_tl, label_tr, label_bl, label_br);
+
+        setTimeout(startRefresh,times);
+    })();
+
+  }
+
+  function windowloaded()
+  {
+    var node = document.getElementById('img_full');
+    setTimeout(refresh, 1, node);
+    var node = document.getElementById('img_tl');
+    setTimeout(refresh, 2, node);
+    var node = document.getElementById('img_tr');
+    setTimeout(refresh, 3, node);
+    var node = document.getElementById('img_bl');
+    setTimeout(refresh, 4, node);
+    var node = document.getElementById('img_br');
+    setTimeout(refresh, 5, node);
+
+    setTimeout(label_refresh, 6);
+  }
+</script>
+<body onload="windowloaded();">
+    <img id="img_full" src="_gray_full_img.jpg" width="960" height="540" class="full"/>
+    <img id="img_ct" src="lapcian_img_ct.jpg" width="96" height="54" class="center"/>
+    <img id="img_tl" src="lapcian_img_tl.jpg" width="96" height="54" class="top-left"/>
+    <img id="img_tr" src="lapcian_img_tr.jpg" width="96" height="54" class="top-right"/>
+    <img id="img_bl" src="lapcian_img_bl.jpg" width="96" height="54" class="bottom-left"/>
+    <img id="img_br" src="lapcian_img_br.jpg" width="96" height="54" class="bottom-right"/>
+    <label id="label_ct" class="label-center"></label>
+    <label id="label_tl" class="label-top-left"></label>
+    <label id="label_tr" class="label-top-right"></label>
+    <label id="label_bl" class="label-bottom-left"></label>
+    <label id="label_br" class="label-bottom-right"></label>
+  </body>
+</html>
